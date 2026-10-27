@@ -1,7 +1,6 @@
 // MEM College starter. Set these two values from Supabase > Project Settings > API.
 const SUPABASE_URL = "https://hpvjerfqkduiyadagggi.supabase.co";
-const SUPABASE_ANON_KEY = "
-sb_publishable_tb-G3ZmFLvCB157U7Mot8g_QmYvlrX0";
+const SUPABASE_ANON_KEY = "sb_publishable_tb-G3ZmFLvCB157U7Mot8g_QmYvlrX0";
 const configured = !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
 const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
