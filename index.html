@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEM College | منصة علوم الحاسوب</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <nav class="sticky top-0 z-20 border-b border-slate-800 bg-slate-900/95 p-4">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-3">
+      <div class="flex items-center gap-3"><i class="fa-solid fa-graduation-cap text-3xl text-indigo-400"></i><div><div class="text-xl font-bold">MEM College</div><div class="text-xs text-slate-400">منصة علوم الحاسوب</div></div></div>
+      <div id="navUser" class="hidden items-center gap-3"><span id="navName" class="text-sm"></span><button id="logoutBtn" class="rounded-lg bg-red-600/20 px-3 py-2 text-sm text-red-300">خروج</button></div>
+    </div>
+  </nav>
+
+  <main class="mx-auto max-w-6xl space-y-6 p-4 md:p-6">
+    <div id="setupWarning" class="hidden rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-200">
+      <strong>إعداد مطلوب:</strong> افتح ملف <code>app.js</code> وضع Project URL وPublishable/anon key من إعدادات مشروع Supabase.
+    </div>
+
+    <section id="authPanel" class="mx-auto mt-8 max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+      <h1 class="mb-2 text-2xl font-bold text-indigo-300">أهلاً بك في MEM College</h1>
+      <p class="mb-6 text-sm text-slate-400">سجّل الدخول أو أنشئ حساب طالب. حساب التدريسي يحتاج اعتماد المدير.</p>
+      <div class="mb-5 grid grid-cols-2 gap-2">
+        <button id="showLogin" class="rounded-lg bg-indigo-600 p-2 font-bold">تسجيل الدخول</button>
+        <button id="showRegister" class="rounded-lg bg-slate-800 p-2 font-bold">إنشاء حساب</button>
+      </div>
+      <form id="loginForm" class="space-y-3">
+        <label class="block text-sm">البريد الإلكتروني<input id="loginEmail" type="email" required autocomplete="email" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+        <label class="block text-sm">كلمة المرور<input id="loginPassword" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+        <button class="w-full rounded-lg bg-indigo-600 p-3 font-bold">دخول</button>
+      </form>
+      <form id="registerForm" class="hidden space-y-3">
+        <label class="block text-sm">الاسم الكامل<input id="regName" required maxlength="100" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+        <label class="block text-sm">البريد الإلكتروني<input id="regEmail" type="email" required autocomplete="email" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+        <label class="block text-sm">كلمة المرور (8 أحرف على الأقل)<input id="regPassword" type="password" minlength="8" required autocomplete="new-password" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+        <label class="block text-sm">نوع الحساب<select id="regRole" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="student">طالب</option><option value="teacher">تدريسي — يحتاج اعتماد المدير</option></select></label>
+        <button class="w-full rounded-lg bg-emerald-600 p-3 font-bold">إنشاء الحساب</button>
+      </form>
+      <p id="authMessage" role="status" class="mt-4 text-sm text-amber-200"></p>
+    </section>
+
+    <section id="pendingPanel" class="hidden rounded-xl border border-amber-500/30 bg-amber-500/10 p-5">
+      <h2 class="text-xl font-bold text-amber-200">الحساب بانتظار الاعتماد</h2><p class="mt-2 text-sm text-slate-300">تم إنشاء حساب التدريسي، لكن لا يمكنه النشر قبل أن يعتمد المدير الحساب.</p>
+    </section>
+
+    <section id="studentPanel" class="hidden space-y-5">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="mb-4 text-xl font-bold text-indigo-300">الملازم الدراسية</h2>
+        <div class="grid gap-3 md:grid-cols-3">
+          <label class="text-sm">القسم<select id="studentDept" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="CS">علوم الحاسوب</option><option value="SWE">هندسة البرمجيات</option><option value="CYBER">الأمن السيبراني</option><option value="AI">الذكاء الاصطناعي</option></select></label>
+          <label class="text-sm">المرحلة<select id="studentStage" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="1">الأولى</option><option value="2">الثانية</option><option value="3">الثالثة</option><option value="4">الرابعة</option></select></label>
+          <div class="flex items-end"><button id="searchLectures" class="w-full rounded-lg bg-indigo-600 p-3 font-bold">عرض الملازم</button></div>
+        </div>
+      </div>
+      <div id="lectureList" class="grid gap-4 md:grid-cols-2"></div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="mb-3 text-xl font-bold">إرسال بلاغ</h2>
+        <textarea id="reportBody" maxlength="3000" placeholder="اكتب المشكلة..." class="w-full rounded-lg border border-slate-700 bg-slate-950 p-3" rows="4"></textarea>
+        <button id="sendReport" class="mt-3 rounded-lg bg-red-600 px-5 py-2 font-bold">إرسال البلاغ</button>
+      </div>
+    </section>
+
+    <section id="teacherPanel" class="hidden space-y-5">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="mb-4 text-xl font-bold text-emerald-300">نشر ملزمة PDF</h2>
+        <form id="uploadForm" class="space-y-3">
+          <div class="grid gap-3 md:grid-cols-3">
+            <label class="text-sm">القسم<select id="uploadDept" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="CS">علوم الحاسوب</option><option value="SWE">هندسة البرمجيات</option><option value="CYBER">الأمن السيبراني</option><option value="AI">الذكاء الاصطناعي</option></select></label>
+            <label class="text-sm">المرحلة<select id="uploadStage" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="1">الأولى</option><option value="2">الثانية</option><option value="3">الثالثة</option><option value="4">الرابعة</option></select></label>
+            <label class="text-sm">عنوان الملزمة<input id="uploadTitle" required maxlength="160" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+          </div>
+          <label class="block text-sm">تعليمات للطلاب<textarea id="uploadInstructions" maxlength="3000" rows="3" class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></textarea></label>
+          <label class="block text-sm">ملف PDF (حد أقصى 15 MB)<input id="uploadFile" type="file" accept="application/pdf,.pdf" required class="mt-1 block w-full rounded-lg border border-slate-700 bg-slate-950 p-3"></label>
+          <button class="rounded-lg bg-emerald-600 px-5 py-3 font-bold">رفع ونشر الملزمة</button>
+        </form>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 class="mb-3 text-xl font-bold">ملاحظات التدريسي</h2><p class="mb-3 text-sm text-slate-400">تظهر الملاحظة للطلاب ضمن القسم والمرحلة المحددين.</p>
+        <form id="noteForm" class="grid gap-3 md:grid-cols-3">
+          <select id="noteDept" class="rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="CS">علوم الحاسوب</option><option value="SWE">هندسة البرمجيات</option><option value="CYBER">الأمن السيبراني</option><option value="AI">الذكاء الاصطناعي</option></select>
+          <select id="noteStage" class="rounded-lg border border-slate-700 bg-slate-950 p-3"><option value="1">الأولى</option><option value="2">الثانية</option><option value="3">الثالثة</option><option value="4">الرابعة</option></select>
+          <input id="noteTitle" required maxlength="160" placeholder="عنوان الملاحظة" class="rounded-lg border border-slate-700 bg-slate-950 p-3">
+          <textarea id="noteBody" required maxlength="3000" placeholder="نص الملاحظة" class="rounded-lg border border-slate-700 bg-slate-950 p-3 md:col-span-3" rows="3"></textarea>
+          <button class="rounded-lg bg-indigo-600 p-3 font-bold md:col-span-3">نشر الملاحظة</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="adminPanel" class="hidden space-y-5">
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="mb-3 text-xl font-bold text-amber-300">اعتماد حسابات التدريسيين</h2>
+        <div id="pendingTeachers" class="space-y-3"></div>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <h2 class="mb-3 text-xl font-bold text-amber-300">البلاغات الواردة</h2>
+        <div id="adminReports" class="space-y-3"></div>
+      </div>
+    </section>
+    <p id="appMessage" role="status" class="text-sm text-slate-300"></p>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>
