@@ -30,3 +30,4 @@ This starter is designed for a free first deployment using GitHub + Vercel + Sup
 - The current student screen displays PDFs and report submission; teacher notes are stored, but the student notes display and report-status editing are not yet implemented.
 - Content moderation, password reset UI, email delivery settings, rate limiting, backups, and a full admin management panel should be added before a large public launch.
 - The admin approval function relies on the profile role being protected by RLS. Do not give the anon key extra privileges.
+Deployment test
